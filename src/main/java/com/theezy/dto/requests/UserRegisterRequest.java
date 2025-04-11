@@ -1,5 +1,6 @@
-package com.theezy.data.models;
+package com.theezy.dto.requests;
 
+import com.theezy.data.models.Contact;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Document
 @Data
-public class User {
+public class UserRegisterRequest {
 
     @Valid
     @Id

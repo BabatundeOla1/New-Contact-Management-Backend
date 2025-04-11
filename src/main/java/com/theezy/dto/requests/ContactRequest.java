@@ -1,5 +1,6 @@
-package com.theezy.data.models;
+package com.theezy.dto.requests;
 
+import com.theezy.data.models.User;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -8,9 +9,9 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
 @Data
-public class Contact{
+@Document
+public class ContactRequest {
     @Valid
     @Id
     private String id;
