@@ -48,19 +48,24 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserLoginResponse login(UserLoginRequest userLoginRequest) {
-        User foundUser = userRepository.findUserByContact_Email(userLoginRequest.getEmail());
+        User foundUser = userRepository.findUserByContact_Email(userLoginRequest.getEmail())
+                .orElseThrow(() -> new UserCanNotBeNullException("User not found"));
+
         if (foundUser == null){
             throw new UserCanNotBeNullException("User Not found");
         }
 
-        boolean isPasswordValid = PasswordHashingService.checkPassword(userLoginRequest.getPassword(), foundUser.getPassword());
+        boolean isPasswordValid = PasswordHashingService.checkPassword(
+                userLoginRequest.getPassword(),
+                foundUser.getPassword());
+
         if (!isPasswordValid){
             throw new UserLoginDetailsInvalid("Invalid details");
         }
 
         return UserMapper.mapLoginToResponse("Login successful.");
-    }
 
+    }
 
     private boolean checkIfUserExist(String phoneNumber){
         return userRepository.existsUserByContact_PhoneNumber(phoneNumber);

@@ -10,6 +10,7 @@ public class UserMapper {
 
     public static User mapRequestToUser(UserRegisterRequest userRegisterRequest){
         User user = new User();
+        user.setId(userRegisterRequest.getId());
         user.setFirstName(userRegisterRequest.getFirstName());
         user.setLastName(userRegisterRequest.getLastName());
         user.setContact(userRegisterRequest.getContact());
@@ -22,6 +23,7 @@ public class UserMapper {
         UserRegisterResponse userRegisterResponse = new UserRegisterResponse();
         userRegisterResponse.setMessage("Registered successfully");
         userRegisterResponse.setData(user.getId());
+        userRegisterResponse.setUserId(user.getId());
         return userRegisterResponse;
     }
 

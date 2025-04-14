@@ -7,18 +7,20 @@ import com.theezy.dto.responses.ContactResponse;
 public class ContactMapper {
     public static Contact mapRequestToContact(ContactRequest contactRequest){
         Contact contact = new Contact();
+        contact.setId(contactRequest.getId());
         contact.setName(contactRequest.getName());
         contact.setEmail(contactRequest.getEmail());
         contact.setAddress(contactRequest.getAddress());
         contact.setPhoneNumber(contactRequest.getPhoneNumber());
-        contact.setBlocked(true);
+        contact.setBlocked(false);
         contact.setUserId(contactRequest.getUserId());
         return contact;
     }
 
-    public static ContactResponse mapContactToResponse(String message){
+    public static ContactResponse mapContactToResponse(Contact contact){
         ContactResponse contactResponse = new ContactResponse();
-        contactResponse.setMessage(message);
+        contactResponse.setContactId(contact.getId());
+        contactResponse.setMessage("Successful");
         return contactResponse;
     }
 }
