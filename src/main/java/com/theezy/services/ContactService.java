@@ -7,6 +7,7 @@ import com.theezy.dto.responses.ContactResponse;
 import com.theezy.dto.responses.UserRegisterResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ContactService {
     ContactResponse saveContact(String userId, ContactRequest contactRequest);
@@ -16,4 +17,6 @@ public interface ContactService {
     List<Contact> getAllContacts(String userId);
 
     Contact searchContactByName(String userId, String name);
+
+    Contact searchContactByContactNumber(String userId, String phoneNumber);
 }

@@ -1,5 +1,7 @@
 package com.theezy.services;
 
+import com.theezy.data.models.JWTService;
+import com.theezy.data.models.Role;
 import com.theezy.data.models.User;
 import com.theezy.data.repositories.UserRepository;
 import com.theezy.dto.requests.UserLoginRequest;
@@ -12,16 +14,33 @@ import com.theezy.utils.exception.UserLoginDetailsInvalid;
 import com.theezy.utils.exception.UserNotFoundException;
 import com.theezy.utils.mapper.UserMapper;
 import com.theezy.utils.passwordHashed.PasswordHashingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
     @Autowired
+    private final JWTService jwtService;
+
+    @Autowired
+    private final AuthenticationManager authenticationManager;
+
+    @Autowired
     private UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) {
         boolean isPhoneNumberExist = checkIfUserExist(userRegisterRequest.getContact().getPhoneNumber());
@@ -32,39 +51,57 @@ public class UserServiceImpl implements UserService{
             throw new UserAlreadyExistException("User already exist");
         }
 
-        String hashedPassword = PasswordHashingService.hashPassword(userRegisterRequest.getPassword());
+        String hashedPassword = passwordEncoder.encode(userRegisterRequest.getPassword());
 
-        User newUser = new User();
-        newUser.setFirstName(userRegisterRequest.getFirstName());
-        newUser.setLastName(userRegisterRequest.getLastName());
-        newUser.setPassword(hashedPassword);
-        newUser.setContact(userRegisterRequest.getContact());
+        User newUser = UserMapper.mapRequestToUser(hashedPassword, userRegisterRequest);
         newUser.getContact().setName("YOU");
-        newUser.setContacts(userRegisterRequest.getContacts());
+        if (newUser.getRole() == null) {
+            newUser.setRole(Role.USER);
+        }
         userRepository.save(newUser);
 
-        return UserMapper.mapUserToResponse(newUser);
+
+        String jwtToken = jwtService.generateToken(newUser);
+        UserRegisterResponse response = UserMapper.mapUserToResponse(jwtToken, newUser);
+
+        return response;
     }
 
     @Override
     public UserLoginResponse login(UserLoginRequest userLoginRequest) {
+
+        try{
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                        userLoginRequest.getEmail(),
+                        userLoginRequest.getPassword()
+                    )
+            );
+        }
+        catch (AuthenticationException error){
+            throw new UserLoginDetailsInvalid("Invalid email or password");
+        }
+
         User foundUser = userRepository.findUserByContact_Email(userLoginRequest.getEmail())
                 .orElseThrow(() -> new UserCanNotBeNullException("User not found"));
 
-        if (foundUser == null){
-            throw new UserCanNotBeNullException("User Not found");
-        }
+        String jwtToken = jwtService.generateToken(foundUser);
 
-        boolean isPasswordValid = PasswordHashingService.checkPassword(
-                userLoginRequest.getPassword(),
-                foundUser.getPassword());
+//        if (foundUser == null){
+//            throw new UserCanNotBeNullException("User Not found");
+//        }
+//
+//        boolean isPasswordValid = PasswordHashingService.checkPassword(
+//                userLoginRequest.getPassword(),
+//                foundUser.getPassword());
+//
+//        if (!isPasswordValid){
+//            throw new UserLoginDetailsInvalid("Invalid details");
+//        }
 
-        if (!isPasswordValid){
-            throw new UserLoginDetailsInvalid("Invalid details");
-        }
-
-        return UserMapper.mapLoginToResponse("Login successful.");
-
+        UserLoginResponse response = UserMapper.mapLoginToResponse("Login successful.");
+        response.setToken(jwtToken);
+        return response;
     }
 
     private boolean checkIfUserExist(String phoneNumber){

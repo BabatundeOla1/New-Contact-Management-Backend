@@ -210,11 +210,11 @@ class ContactServiceImplTest {
         ContactResponse secondSavedContactResponse = contactService.saveContact(response.getUserId(), secondContact);
         assertEquals(3, contactRepository.count());
 
-        Contact foundContact =  contactService.searchContactByName(response.getUserId(), secondContact.getName());
+        Contact foundContact = contactService.searchContactByName(response.getUserId(), firstContact.getName());
 
         assertNotNull(foundContact);
-        assertEquals(secondContact.getName(), foundContact.getName());
-        assertEquals(secondContact.getPhoneNumber(), foundContact.getPhoneNumber());
+        assertEquals(firstContact.getName(), foundContact.getName());
+        assertEquals(firstContact.getPhoneNumber(), foundContact.getPhoneNumber());
 
         try {
             String jsonOutput = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(foundContact);
@@ -223,4 +223,36 @@ class ContactServiceImplTest {
             throw new RuntimeException(e);
         }
     }
+    @Test
+    public void testThatUserCanSearchForA_ContactUsingContactNumber(){
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
+        setUpUser(userRegisterRequest);
+        UserRegisterResponse response = userService.registerUser(userRegisterRequest);
+        assertEquals(1, userRepository.count());
+
+        ContactRequest firstContact = new ContactRequest();
+        setUpContactToAdd(firstContact);
+        ContactResponse firstSavedContactResponse =  contactService.saveContact(response.getUserId(), firstContact);
+        assertNotNull(response.getUserId());
+        assertEquals(2, contactRepository.count());
+
+        ContactRequest secondContact = new ContactRequest();
+        setUpSecondContactToAdd(secondContact);
+        ContactResponse secondSavedContactResponse = contactService.saveContact(response.getUserId(), secondContact);
+        assertEquals(3, contactRepository.count());
+
+        Contact foundContact = contactService.searchContactByContactNumber(response.getUserId(), firstContact.getPhoneNumber());
+
+        assertNotNull(foundContact);
+        assertEquals(firstContact.getName(), foundContact.getName());
+        assertEquals(firstContact.getPhoneNumber(), foundContact.getPhoneNumber());
+
+        try {
+            String jsonOutput = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(foundContact);
+            System.out.println(jsonOutput);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

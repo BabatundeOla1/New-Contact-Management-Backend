@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 class ContactServiceImpl implements ContactService{
@@ -83,5 +84,11 @@ class ContactServiceImpl implements ContactService{
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
     }
 
+    @Override
+    public Contact searchContactByContactNumber(String userId, String phoneNumber) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
 
+        return contactRepository.findContactByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));    }
 }

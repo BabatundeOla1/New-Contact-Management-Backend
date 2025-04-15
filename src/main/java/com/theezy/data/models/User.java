@@ -41,12 +41,17 @@ public class User implements UserDetails {
     private Contact contact;
 
 
-    private Role role;
+    @NotNull
+    private Role role = Role.USER;
 
     private List<Contact> contacts = new java.util.ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role == null){
+            throw new IllegalStateException("Role is not set for user");
+        }
+
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 

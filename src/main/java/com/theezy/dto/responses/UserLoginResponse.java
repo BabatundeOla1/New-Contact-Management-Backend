@@ -6,4 +6,5 @@ import lombok.Data;
 public class UserLoginResponse {
     private String message;
     private boolean status;
+    private String token;
 }
