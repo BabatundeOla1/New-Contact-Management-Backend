@@ -4,6 +4,7 @@ import com.theezy.data.models.JWTService;
 import com.theezy.data.models.Role;
 import com.theezy.data.models.User;
 import com.theezy.data.repositories.UserRepository;
+import com.theezy.dto.requests.OtpSendRequest;
 import com.theezy.dto.requests.UserLoginRequest;
 import com.theezy.dto.requests.UserRegisterRequest;
 import com.theezy.dto.responses.UserLoginResponse;
@@ -12,6 +13,7 @@ import com.theezy.utils.exception.UserAlreadyExistException;
 import com.theezy.utils.exception.UserCanNotBeNullException;
 import com.theezy.utils.exception.UserLoginDetailsInvalid;
 import com.theezy.utils.exception.UserNotFoundException;
+import com.theezy.utils.mapper.OtpVerificationMapper;
 import com.theezy.utils.mapper.UserMapper;
 import com.theezy.utils.passwordHashed.PasswordHashingService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
+
+    @Autowired
+    private OtpVerificationService otpVerificationService;
 
     @Autowired
     private final JWTService jwtService;
@@ -60,6 +65,7 @@ public class UserServiceImpl implements UserService{
         }
         userRepository.save(newUser);
 
+        otpVerificationService.sendOtp( OtpVerificationMapper.mapToOtpSendRequest(newUser.getContact().getEmail()));
 
         String jwtToken = jwtService.generateToken(newUser);
         UserRegisterResponse response = UserMapper.mapUserToResponse(jwtToken, newUser);
@@ -87,20 +93,7 @@ public class UserServiceImpl implements UserService{
 
         String jwtToken = jwtService.generateToken(foundUser);
 
-//        if (foundUser == null){
-//            throw new UserCanNotBeNullException("User Not found");
-//        }
-//
-//        boolean isPasswordValid = PasswordHashingService.checkPassword(
-//                userLoginRequest.getPassword(),
-//                foundUser.getPassword());
-//
-//        if (!isPasswordValid){
-//            throw new UserLoginDetailsInvalid("Invalid details");
-//        }
-
-        UserLoginResponse response = UserMapper.mapLoginToResponse("Login successful.");
-        response.setToken(jwtToken);
+        UserLoginResponse response = UserMapper.mapLoginToResponse(jwtToken, "Login successful.");
         return response;
     }
 
