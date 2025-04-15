@@ -1,16 +1,13 @@
 package com.theezy.data.models;
 
 import lombok.Data;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Data
-@Document
-public class OtpGenerator {
-
+public class OtpVerification {
     private String id;
+    private String email;
     private String code;
     private LocalDateTime expirationTime;
-    private boolean isUsed;
 }

@@ -40,6 +40,7 @@ public class User implements UserDetails {
     @Valid
     private Contact contact;
 
+    private boolean isVerified;
 
     @NotNull
     private Role role = Role.USER;

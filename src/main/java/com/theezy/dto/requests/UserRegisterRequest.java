@@ -33,6 +33,7 @@ public class UserRegisterRequest {
     @NotNull(message = "password is required")
     @NotBlank(message = "password is require")
     private String password;
+    private boolean isVerified;
 
     @Valid
     private Contact contact;

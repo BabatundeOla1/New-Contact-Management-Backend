@@ -25,7 +25,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/mycallerApp/registerUser", "/mycallerApp/userLogin").permitAll()
+                        .requestMatchers(
+                                "/mycallerApp/registerUser",
+                                "/mycallerApp/userLogin",
+                                "/otp/verify-otp/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
