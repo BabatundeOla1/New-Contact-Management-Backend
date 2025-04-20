@@ -1,6 +1,6 @@
 package com.theezy.configuration;
 
-import jakarta.servlet.Filter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,15 +20,15 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    //HttpSecurity is a fluent API that allows you to customize security settings in a declarative way
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable()) //This disables Cross-Site Request Forgery (CSRF) protection.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/mycallerApp/registerUser",
                                 "/mycallerApp/userLogin",
-                                "/otp/verify-otp/**").permitAll()
+                                "/otp/verify-otp/**",
+                                "/contacts/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -36,7 +36,6 @@ public class SecurityConfiguration {
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

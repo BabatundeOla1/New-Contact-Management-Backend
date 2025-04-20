@@ -67,9 +67,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- NumVerify Dependency -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>3.4.4</version>
         </dependency>
 
         <dependency>
@@ -112,14 +114,6 @@
         </dependency>
 
         <!-- To send verification email -->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.sendgrid</groupId>-->
-        <!--            <artifactId>sendgrid-java</artifactId>-->
-        <!--            <version>4.10.2</version>-->
-        <!--        </dependency>-->
-
-
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -134,5 +128,25 @@
             <version>3.2.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--Redis for Caching-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
     </dependencies>
+
+    <!-- this plugin to compile with parameter names:-->
+
+
 </project>

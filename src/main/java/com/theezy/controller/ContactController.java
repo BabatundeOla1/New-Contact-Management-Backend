@@ -1,8 +1,10 @@
 package com.theezy.controller;
 
 import com.theezy.dto.requests.ContactRequest;
+import com.theezy.dto.requests.PhoneNumberRequest;
 import com.theezy.dto.responses.ContactResponse;
 import com.theezy.services.ContactService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,4 +31,21 @@ public class ContactController {
 
         return new ResponseEntity<>(contactService.deleteContactById(userId, contactId), HttpStatus.OK);
     }
+
+    @DeleteMapping("deleteAllContact/user/{userId}/contacts")
+    public ResponseEntity<String> deleteAllContact(@PathVariable("userId") String userId) {
+        contactService.deleteAllContact(userId);
+        return ResponseEntity.ok("All contacts have been successfully deleted.");
+    }
+
+    @PostMapping("blockContact/user/{userId}/contacts")
+    public ResponseEntity<ContactResponse> blockContact(@PathVariable("userId") String userId, @RequestBody @Valid PhoneNumberRequest request) {
+        return new ResponseEntity<>(contactService.blockContactByPhoneNumber(userId, request.getPhoneNumber()), HttpStatus.OK);
+    }
+
+    @PostMapping("unblockContact/user/{userId}/contacts")
+    public ResponseEntity<ContactResponse> unblockContact(@PathVariable("userId") String userId, @RequestBody @Valid PhoneNumberRequest request){
+        return new ResponseEntity<>(contactService.unblockContactByPhoneNumber(userId, request.getPhoneNumber()), HttpStatus.OK);
+    }
+
 }

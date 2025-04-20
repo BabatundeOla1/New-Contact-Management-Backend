@@ -19,9 +19,9 @@ public class UserMapper {
         return user;
     }
 
-    public static UserRegisterResponse mapUserToResponse(String jwtToken, User user){
+    public static UserRegisterResponse mapUserToResponse(String jwtToken, User user, String message){
         UserRegisterResponse userRegisterResponse = new UserRegisterResponse();
-        userRegisterResponse.setMessage("Registered successfully, Check email for verification code");
+        userRegisterResponse.setMessage(message);
         userRegisterResponse.setUserId(user.getId());
         userRegisterResponse.setToken(jwtToken);
         return userRegisterResponse;

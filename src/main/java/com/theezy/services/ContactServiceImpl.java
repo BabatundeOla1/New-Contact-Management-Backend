@@ -9,12 +9,14 @@ import com.theezy.dto.responses.ContactResponse;
 import com.theezy.utils.exception.ContactNotFoundException;
 import com.theezy.utils.exception.UserNotFoundException;
 import com.theezy.utils.mapper.ContactMapper;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 class ContactServiceImpl implements ContactService{
@@ -26,7 +28,8 @@ class ContactServiceImpl implements ContactService{
     private ContactRepository contactRepository;
 
     @Override
-    public ContactResponse saveContact(String userId, ContactRequest contactRequest) {
+    @CachePut(value = "contacts", key = "#p0")
+    public ContactResponse saveContact(@Param("userId") String userId, ContactRequest contactRequest) {
         User user = userRepository.findUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
 
@@ -38,6 +41,7 @@ class ContactServiceImpl implements ContactService{
 
         return ContactMapper.mapContactToResponse(mappedContact);
     }
+
 
     @Override
     public ContactResponse deleteContactById(String userId,  String contactId) {
@@ -59,15 +63,20 @@ class ContactServiceImpl implements ContactService{
     }
 
     @Override
+    @CacheEvict(value = "contacts", key = "#userId")
     public void deleteAllContact(String userId) {
         User user = userRepository.findUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        List<Contact> contactsToDelete = user.getContacts();
+        contactRepository.deleteAll(contactsToDelete);
 
         user.getContacts().clear();
         userRepository.save(user);
     }
 
     @Override
+    @Cacheable(value = "contacts", key = "#userId")
     public List<Contact> getAllContacts(String userId) {
         User user = userRepository.findUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
@@ -90,5 +99,58 @@ class ContactServiceImpl implements ContactService{
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
 
         return contactRepository.findContactByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));    }
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
+    }
+
+    @Override
+    public ContactResponse blockContactByPhoneNumber(String userId, String phoneNumber) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        Contact foundContact =  contactRepository.findContactByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
+
+        if (user.getContacts().stream().noneMatch(myContact -> myContact.getId().equals(foundContact.getId()))){
+            throw new ContactNotFoundException("Contact not found in your contact list.");
+        }
+
+        if (user.getContacts().stream().anyMatch(contact -> contact.getId().equals(foundContact.getId()))){
+            foundContact.setBlocked(true);
+            userRepository.save(user);
+        }
+
+        foundContact.setBlocked(true);
+        contactRepository.save(foundContact);
+
+        return ContactMapper.mapContactToResponse(foundContact);
+    }
+
+    @Override
+    @CachePut(value = "contacts", key = "#userId")
+    public List<Contact> getBlockedContacts(String userId) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        return user.getContacts().stream()
+                .filter(Contact::isBlocked)
+                .toList();
+    }
+
+    @Override
+    @CacheEvict(value = "contacts", key = "#userId")
+    public ContactResponse unblockContactByPhoneNumber(String userId, String phoneNumber) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        Contact foundContact =  contactRepository.findContactByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
+
+        if (user.getContacts().stream().noneMatch((myContact) -> myContact.getId().equals(foundContact.getId()))){
+            throw new ContactNotFoundException("This contact does not belong to the user.");
+        }
+        foundContact.setBlocked(false);
+        contactRepository.save(foundContact);
+
+        return ContactMapper.mapContactToResponse(foundContact);
+    }
 }

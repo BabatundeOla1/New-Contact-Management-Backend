@@ -8,9 +8,11 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
+
 @Document
 @Data
-public class Contact{
+public class Contact implements Serializable {
     @Valid
     @Id
     private String id;

@@ -13,10 +13,13 @@ public interface ContactService {
     ContactResponse saveContact(String userId, ContactRequest contactRequest);
     ContactResponse deleteContactById(String userId, String contactId);
     void deleteAllContact(String userId);
-
     List<Contact> getAllContacts(String userId);
-
     Contact searchContactByName(String userId, String name);
-
     Contact searchContactByContactNumber(String userId, String phoneNumber);
+    ContactResponse blockContactByPhoneNumber(String userId, String phoneNumber);
+
+    List<Contact> getBlockedContacts(String userId);
+
+    ContactResponse unblockContactByPhoneNumber(String userId, String phoneNumber);
+//    ContactResponse updateContact(String userId, ContactRequest updatedContactRequest);
 }

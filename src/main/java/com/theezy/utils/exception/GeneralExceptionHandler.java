@@ -43,6 +43,11 @@ public class GeneralExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
+    @ExceptionHandler(FailToSendOtpException.class)
+    public ResponseEntity<ErrorResponse> handleFailToSendOtpException(FailToSendOtpException e){
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
 
 
 }

@@ -3,6 +3,7 @@ package com.theezy.controller;
 import com.theezy.dto.requests.OtpSendRequest;
 import com.theezy.dto.requests.VerifyOtpCode;
 import com.theezy.dto.responses.OtpVerificationResponse;
+import com.theezy.dto.responses.UserRegisterResponse;
 import com.theezy.services.OtpVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class OtpVerificationController {
     }
 
     @PostMapping("verify-otp/{email}/verifyotp")
-    public ResponseEntity<OtpVerificationResponse> verifyOtp(@PathVariable("email") String email, @RequestBody VerifyOtpCode verifyOtpCode) {
+    public ResponseEntity<UserRegisterResponse> verifyOtp(@PathVariable("email") String email, @RequestBody VerifyOtpCode verifyOtpCode) {
         return ResponseEntity.ok(otpVerificationService.verifyOtp(email, verifyOtpCode));
     }
 }

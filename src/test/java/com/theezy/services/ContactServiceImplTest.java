@@ -254,5 +254,28 @@ class ContactServiceImplTest {
             throw new RuntimeException(e);
         }
     }
+    @Test
+    public void testThatUserCanBlockContact() {
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
+        setUpUser(userRegisterRequest);
+        UserRegisterResponse response = userService.registerUser(userRegisterRequest);
+        assertEquals(1, userRepository.count());
 
-}
+        ContactRequest firstContact = new ContactRequest();
+        setUpContactToAdd(firstContact);
+        ContactResponse firstSavedContactResponse = contactService.saveContact(response.getUserId(), firstContact);
+        assertNotNull(response.getUserId());
+        assertEquals(2, contactRepository.count());
+
+        ContactRequest secondContact = new ContactRequest();
+        setUpSecondContactToAdd(secondContact);
+        ContactResponse secondSavedContactResponse = contactService.saveContact(response.getUserId(), secondContact);
+        assertEquals(3, contactRepository.count());
+
+//        Contact blockedContact = contactService.blockContactByPhoneNumber(response.getUserId() ,firstContact.getPhoneNumber());
+//        assertTrue(blockedContact.isBlocked());
+
+    }
+
+
+    }

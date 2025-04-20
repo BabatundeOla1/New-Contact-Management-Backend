@@ -9,10 +9,7 @@ import com.theezy.dto.requests.UserLoginRequest;
 import com.theezy.dto.requests.UserRegisterRequest;
 import com.theezy.dto.responses.UserLoginResponse;
 import com.theezy.dto.responses.UserRegisterResponse;
-import com.theezy.utils.exception.UserAlreadyExistException;
-import com.theezy.utils.exception.UserCanNotBeNullException;
-import com.theezy.utils.exception.UserLoginDetailsInvalid;
-import com.theezy.utils.exception.UserNotFoundException;
+import com.theezy.utils.exception.*;
 import com.theezy.utils.mapper.OtpVerificationMapper;
 import com.theezy.utils.mapper.UserMapper;
 import com.theezy.utils.passwordHashed.PasswordHashingService;
@@ -25,6 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -47,6 +45,7 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) {
         boolean isPhoneNumberExist = checkIfUserExist(userRegisterRequest.getContact().getPhoneNumber());
 
@@ -65,12 +64,18 @@ public class UserServiceImpl implements UserService{
         }
         userRepository.save(newUser);
 
-        otpVerificationService.sendOtp( OtpVerificationMapper.mapToOtpSendRequest(newUser.getContact().getEmail()));
+        try {
+            otpVerificationService.sendOtp(OtpVerificationMapper.mapToOtpSendRequest(newUser.getContact().getEmail()));
 
-        String jwtToken = jwtService.generateToken(newUser);
-        UserRegisterResponse response = UserMapper.mapUserToResponse(jwtToken, newUser);
+        } catch (Exception e){
+            userRepository.delete(newUser);
+            throw new FailToSendOtpException("Network Error, Failed to send OTP: " + e.getMessage());
+        }
 
-        return response;
+        return UserMapper.mapUserToResponse(null, newUser, "Registration Successful");
+//        String jwtToken = jwtService.generateToken(newUser);
+//        return UserMapper.mapUserToResponse(jwtToken, newUser);
+
     }
 
     @Override
@@ -92,9 +97,7 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new UserCanNotBeNullException("User not found"));
 
         String jwtToken = jwtService.generateToken(foundUser);
-
-        UserLoginResponse response = UserMapper.mapLoginToResponse(jwtToken, "Login successful.");
-        return response;
+        return UserMapper.mapLoginToResponse(jwtToken, "Login successful.");
     }
 
     private boolean checkIfUserExist(String phoneNumber){
