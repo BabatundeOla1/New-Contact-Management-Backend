@@ -73,9 +73,6 @@ public class UserServiceImpl implements UserService{
         }
 
         return UserMapper.mapUserToResponse(null, newUser, "Registration Successful");
-//        String jwtToken = jwtService.generateToken(newUser);
-//        return UserMapper.mapUserToResponse(jwtToken, newUser);
-
     }
 
     @Override

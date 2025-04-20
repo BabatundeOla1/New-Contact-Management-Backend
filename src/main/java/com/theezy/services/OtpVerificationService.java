@@ -9,6 +9,5 @@ import com.theezy.dto.responses.UserRegisterResponse;
 public interface OtpVerificationService {
 
     void sendOtp(OtpSendRequest request);
-//    OtpVerificationResponse verifyOtp(OtpVerificationRequest request);
 UserRegisterResponse verifyOtp(String email, VerifyOtpCode verifyOtpCode);
 }

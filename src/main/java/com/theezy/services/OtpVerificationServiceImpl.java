@@ -8,7 +8,6 @@ import com.theezy.data.repositories.UserRepository;
 import com.theezy.dto.requests.OtpSendRequest;
 import com.theezy.dto.requests.OtpVerificationRequest;
 import com.theezy.dto.requests.VerifyOtpCode;
-import com.theezy.dto.responses.OtpVerificationResponse;
 import com.theezy.dto.responses.UserRegisterResponse;
 import com.theezy.utils.exception.InvalidOtpException;
 import com.theezy.utils.exception.OtpExpiredException;
@@ -73,11 +72,10 @@ public class OtpVerificationServiceImpl implements OtpVerificationService{
 
         user.setVerified(true);
         userRepository.save(user);
-        sendMessageToEmail(user.getContact().getEmail(), "Your Account has been verified");
+        sendMessageToEmail(user.getContact().getEmail());
         String jwtToken = jwtService.generateToken(user);
         otpVerificationRepository.deleteByEmail(email);
         return UserMapper.mapUserToResponse(jwtToken, user, "Email Verified Successfully");
-//         OtpVerificationMapper.mapMessageToResponse("OTP verified successfully.");
     }
 
 
@@ -93,11 +91,11 @@ public class OtpVerificationServiceImpl implements OtpVerificationService{
         message.setFrom("verifynewuser11@gmail.com");
         javaMailSender.send(message);
     }
-    private void sendMessageToEmail(String to, String verificationMessage) {
+    private void sendMessageToEmail(String to) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("ACCOUNT VERIFICATION");
-        message.setText(verificationMessage);
+        message.setText("Your Account has been verified");
         message.setFrom("verifynewuser11@gmail.com");
         javaMailSender.send(message);
     }
