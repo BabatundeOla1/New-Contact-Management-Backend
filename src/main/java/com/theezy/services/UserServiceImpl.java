@@ -63,16 +63,18 @@ public class UserServiceImpl implements UserService{
             newUser.setRole(Role.USER);
         }
         userRepository.save(newUser);
+        OtpSendRequest userEmail = OtpVerificationMapper.mapToOtpSendRequest(newUser.getContact().getEmail());
 
         try {
-            otpVerificationService.sendOtp(OtpVerificationMapper.mapToOtpSendRequest(newUser.getContact().getEmail()));
+
+            otpVerificationService.sendOtp(userEmail);
 
         } catch (Exception e){
             userRepository.delete(newUser);
             throw new FailToSendOtpException("Network Error, Failed to send OTP: " + e.getMessage());
         }
 
-        return UserMapper.mapUserToResponse(null, newUser, "Registration Successful");
+        return UserMapper.mapUserToResponse(null, null, newUser, "Registration Successful");
     }
 
     @Override
@@ -93,8 +95,9 @@ public class UserServiceImpl implements UserService{
         User foundUser = userRepository.findUserByContact_Email(userLoginRequest.getEmail())
                 .orElseThrow(() -> new UserCanNotBeNullException("User not found"));
 
-        String jwtToken = jwtService.generateToken(foundUser);
-        return UserMapper.mapLoginToResponse(jwtToken, "Login successful.");
+        String jwtAccessToken = jwtService.generateAccessToken(foundUser);
+        String refreshToken = jwtService.generateRefreshToken(foundUser);
+        return UserMapper.mapLoginToResponse(jwtAccessToken, refreshToken, "Login successful.");
     }
 
     private boolean checkIfUserExist(String phoneNumber){

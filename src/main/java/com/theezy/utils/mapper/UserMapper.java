@@ -19,19 +19,20 @@ public class UserMapper {
         return user;
     }
 
-    public static UserRegisterResponse mapUserToResponse(String jwtToken, User user, String message){
+    public static UserRegisterResponse mapUserToResponse(String jwtAccessToken, String refreshToken, User user, String message){
         UserRegisterResponse userRegisterResponse = new UserRegisterResponse();
         userRegisterResponse.setMessage(message);
         userRegisterResponse.setUserId(user.getId());
-        userRegisterResponse.setToken(jwtToken);
+        userRegisterResponse.setRefreshToken(refreshToken);
+        userRegisterResponse.setJwtAccessToken(jwtAccessToken);
         return userRegisterResponse;
     }
 
-    public static UserLoginResponse mapLoginToResponse(String jwtToken, String message){
+    public static UserLoginResponse mapLoginToResponse(String jwtToken, String refreshToken, String message){
         UserLoginResponse loginResponse = new UserLoginResponse();
         loginResponse.setMessage(message);
-        loginResponse.setStatus(true);
-        loginResponse.setToken(jwtToken);
+        loginResponse.setRefreshToken(refreshToken);
+        loginResponse.setAccessToken(jwtToken);
         return loginResponse;
     }
 }

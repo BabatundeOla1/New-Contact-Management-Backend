@@ -11,12 +11,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 @Document
 @Data
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
 
     @Valid
     @Id

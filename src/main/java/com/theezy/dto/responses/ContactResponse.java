@@ -12,4 +12,5 @@ public class ContactResponse implements Serializable {
 
     private String message;
     private String contactId;
+    private Object data;
 }

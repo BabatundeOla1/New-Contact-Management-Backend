@@ -31,18 +31,12 @@ public class JWTService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateAccessToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails, 10 * 60 * 1000); // 10 minutes expiration for access token
     }
 
-    public String generateToken(Map<String, Object> extractClaims, UserDetails userDetails){
-        return Jwts.builder()
-                .setClaims(extractClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
-                .signWith(getSignIngKey(), SignatureAlgorithm.HS256)
-                .compact();
+    public String generateRefreshToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails, 7 * 24 * 60 * 60 * 1000); // 7 days expiration for refresh token
     }
 
     public  boolean isTokenValid(String token, UserDetails userDetails){
@@ -50,6 +44,15 @@ public class JWTService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
+    private String generateToken(Map<String, Object> extractClaims, UserDetails userDetails, long expirationTime){
+        return Jwts.builder()
+                .setClaims(extractClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getSignIngKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

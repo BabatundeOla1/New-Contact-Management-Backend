@@ -13,7 +13,7 @@ target/
 *.ipr
 .env
 application.properties
-C:\Users\DELL USER\Desktop\NewContactManagement\src\main\resources
+#C:\Users\DELL USER\Desktop\NewContactManagement\src\main\resources
 
 ### Eclipse ###
 .apt_generated

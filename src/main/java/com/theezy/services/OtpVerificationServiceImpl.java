@@ -73,9 +73,10 @@ public class OtpVerificationServiceImpl implements OtpVerificationService{
         user.setVerified(true);
         userRepository.save(user);
         sendMessageToEmail(user.getContact().getEmail());
-        String jwtToken = jwtService.generateToken(user);
+        String jwtAccessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
         otpVerificationRepository.deleteByEmail(email);
-        return UserMapper.mapUserToResponse(jwtToken, user, "Email Verified Successfully");
+        return UserMapper.mapUserToResponse(jwtAccessToken, refreshToken, user, "Email Verified Successfully");
     }
 
 
