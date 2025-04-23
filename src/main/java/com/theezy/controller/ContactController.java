@@ -1,7 +1,10 @@
 package com.theezy.controller;
 
+import com.theezy.data.models.Contact;
 import com.theezy.dto.requests.ContactRequest;
 import com.theezy.dto.requests.PhoneNumberRequest;
+import com.theezy.dto.requests.SearchContactByNameRequest;
+import com.theezy.dto.requests.SearchContactByPhoneNumberRequest;
 import com.theezy.dto.responses.ContactResponse;
 import com.theezy.dto.responses.DeleteAllContactResponse;
 import com.theezy.services.ContactService;
@@ -31,6 +34,14 @@ public class ContactController {
             @PathVariable("contactId") @NotBlank(message = "Contact ID is required") String contactId) {
 
         return new ResponseEntity<>(contactService.deleteContactById(userId, contactId), HttpStatus.OK);
+    }
+    @PostMapping("searchByName/user/contacts")
+    public ResponseEntity<Contact> searchByName(@RequestBody @Valid SearchContactByNameRequest searchContactByNameRequest) {
+        return new ResponseEntity<>(contactService.searchContactByName(searchContactByNameRequest), HttpStatus.OK);
+    }
+    @PostMapping("searchByPhoneNumber/user/contacts")
+    public ResponseEntity<Contact> searchByPhoneNumber(@RequestBody @Valid SearchContactByPhoneNumberRequest searchContactByPhoneNumberRequest) {
+        return new ResponseEntity<>(contactService.searchContactByContactNumber(searchContactByPhoneNumberRequest), HttpStatus.OK);
     }
 
     @DeleteMapping("deleteAllContact/user/{userId}/contacts")

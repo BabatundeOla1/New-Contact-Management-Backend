@@ -2,6 +2,8 @@ package com.theezy.services;
 
 import com.theezy.data.models.Contact;
 import com.theezy.dto.requests.ContactRequest;
+import com.theezy.dto.requests.SearchContactByNameRequest;
+import com.theezy.dto.requests.SearchContactByPhoneNumberRequest;
 import com.theezy.dto.requests.UserRegisterRequest;
 import com.theezy.dto.responses.ContactResponse;
 import com.theezy.dto.responses.DeleteAllContactResponse;
@@ -15,12 +17,13 @@ public interface ContactService {
     ContactResponse deleteContactById(String userId, String contactId);
     DeleteAllContactResponse deleteAllContact(String userId);
     List<Contact> getAllContacts(String userId);
-    Contact searchContactByName(String userId, String name);
-    Contact searchContactByContactNumber(String userId, String phoneNumber);
+    Contact searchContactByName(SearchContactByNameRequest searchContactByNameRequest);
+    Contact searchContactByContactNumber(SearchContactByPhoneNumberRequest searchContactByPhoneNumberRequest);
     ContactResponse blockContactByPhoneNumber(String userId, String phoneNumber);
 
     List<Contact> getBlockedContacts(String userId);
 
     ContactResponse unblockContactByPhoneNumber(String userId, String phoneNumber);
-//    ContactResponse updateContact(String userId, ContactRequest updatedContactRequest);
+
+    ContactResponse updateContact(String userId, String phoneNumber, ContactRequest updatedContactRequest);
 }

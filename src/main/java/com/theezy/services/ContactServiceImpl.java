@@ -5,18 +5,20 @@ import com.theezy.data.models.User;
 import com.theezy.data.repositories.ContactRepository;
 import com.theezy.data.repositories.UserRepository;
 import com.theezy.dto.requests.ContactRequest;
+import com.theezy.dto.requests.SearchContactByNameRequest;
+import com.theezy.dto.requests.SearchContactByPhoneNumberRequest;
 import com.theezy.dto.responses.ContactResponse;
 import com.theezy.dto.responses.DeleteAllContactResponse;
 import com.theezy.utils.exception.ContactNotFoundException;
 import com.theezy.utils.exception.UserNotFoundException;
 import com.theezy.utils.mapper.ContactMapper;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -27,6 +29,7 @@ class ContactServiceImpl implements ContactService{
 
     @Autowired
     private ContactRepository contactRepository;
+
 
     @Override
     @CachePut(value = "contacts", key = "#root.args[0] + '--' + #result.data")
@@ -43,8 +46,8 @@ class ContactServiceImpl implements ContactService{
         return ContactMapper.mapContactToResponse(mappedContact);
     }
 
-
     @Override
+    @CacheEvict(value = "contacts", key = "#root.args[0] + '--' + #result.data")
     public ContactResponse deleteContactById(String userId,  String contactId) {
         User user = userRepository.findUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
@@ -87,44 +90,26 @@ class ContactServiceImpl implements ContactService{
     }
 
     @Override
-    public Contact searchContactByName(String userId, String name) {
-        User user = userRepository.findUserById(userId)
+    @Cacheable(value = "contactByName", key = "#root.args[0]")
+    public Contact searchContactByName(SearchContactByNameRequest searchContactByNameRequest) {
+        User user = userRepository.findUserById(searchContactByNameRequest.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
 
-        return contactRepository.findContactByName(name)
+        return contactRepository.findByNameAndUserId(searchContactByNameRequest.getName().toLowerCase(), searchContactByNameRequest.getUserId())
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
     }
 
     @Override
-    public Contact searchContactByContactNumber(String userId, String phoneNumber) {
-        User user = userRepository.findUserById(userId)
+    @Cacheable(value = "contactPhoneNumber", key = "#root.args[0]")
+    public Contact searchContactByContactNumber(SearchContactByPhoneNumberRequest searchContactByPhoneNumberRequest) {
+        User user = userRepository.findUserById(searchContactByPhoneNumberRequest.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("User Id not found"));
 
-        return contactRepository.findContactByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
-    }
+//        System.out.println("Request " + searchContactByPhoneNumberRequest.getPhoneNumber());
+//        System.out.println("Request " + searchContactByPhoneNumberRequest.getUserId());
 
-    @Override
-    public ContactResponse blockContactByPhoneNumber(String userId, String phoneNumber) {
-        User user = userRepository.findUserById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
-
-        Contact foundContact =  contactRepository.findContactByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
-
-        if (user.getContacts().stream().noneMatch(myContact -> myContact.getId().equals(foundContact.getId()))){
-            throw new ContactNotFoundException("Contact not found in your contact list.");
-        }
-        foundContact.setBlocked(true);
-        contactRepository.save(foundContact);
-
-        user.getContacts().stream().filter(contact -> contact.getId().equals(foundContact.getId()))
-                        .findFirst()
-                                .ifPresent(contact -> contact.setBlocked(true));
-
-        userRepository.save(user);
-
-        return ContactMapper.mapContactToResponse(foundContact);
+        return contactRepository.findContactByPhoneNumber(searchContactByPhoneNumberRequest.getPhoneNumber())
+                .orElseThrow(() -> new ContactNotFoundException("Contact Number not found"));
     }
 
     @Override
@@ -136,6 +121,30 @@ class ContactServiceImpl implements ContactService{
         return user.getContacts().stream()
                 .filter(Contact::isBlocked)
                 .toList();
+    }
+
+    @Override
+    public ContactResponse blockContactByPhoneNumber(String userId, String phoneNumber) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        Contact foundContact =  contactRepository.findContactByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
+
+        boolean isExist = user.getContacts().stream().noneMatch(myContact -> myContact.getId().equals(foundContact.getId()));
+        if (!isExist){
+            throw new ContactNotFoundException("Contact not found in your contact list.");
+        }
+        foundContact.setBlocked(true);
+        contactRepository.save(foundContact);
+
+        user.getContacts().stream().filter(contact -> contact.getId().equals(foundContact.getId()))
+                .findFirst()
+                .ifPresent(contact -> contact.setBlocked(true));
+
+        userRepository.save(user);
+
+        return ContactMapper.mapContactToResponse(foundContact);
     }
 
     @Override
@@ -157,6 +166,27 @@ class ContactServiceImpl implements ContactService{
                 .findFirst()
                 .ifPresent(contact -> contact.setBlocked(false));
         userRepository.save(user);
+
+        return ContactMapper.mapContactToResponse(foundContact);
+    }
+
+    @Override
+    @CachePut(value = "contactByPhone", key = "#root.args[0] + '--' + #result.data")
+    public ContactResponse updateContact(String userId, String phoneNumber, ContactRequest updatedContactRequest) {
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Id not found"));
+
+        Contact foundContact = contactRepository.findContactByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ContactNotFoundException("Contact not found"));
+
+        foundContact.setName(updatedContactRequest.getName());
+        foundContact.setAddress(updatedContactRequest.getAddress());
+        foundContact.setEmail(updatedContactRequest.getEmail());
+        foundContact.setPhoneNumber(updatedContactRequest.getPhoneNumber());
+        foundContact.setBlocked(updatedContactRequest.isBlocked());
+        foundContact.setUserId(updatedContactRequest.getUserId());
+
+        contactRepository.save(foundContact);
 
         return ContactMapper.mapContactToResponse(foundContact);
     }

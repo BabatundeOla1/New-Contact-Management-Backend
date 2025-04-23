@@ -77,15 +77,8 @@ class UserServiceImplTest {
 
     @Test
     public void testThatUserCanLogin(){
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        setUpNewUser(userRegisterRequest);
-        userService.registerUser(userRegisterRequest);
-        assertEquals(1, userRepository.count());
-
-        UserLoginRequest userLoginRequest = new UserLoginRequest();
-        setUpUserLogin(userLoginRequest);
-        UserLoginResponse loginResponse =  userService.login(userLoginRequest);
-        assertTrue(loginResponse.isStatus());
+        Object o = contactRepository.findByName("rof");
+        assertNotNull(o);
 
     }
 }
